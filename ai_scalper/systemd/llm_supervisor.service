@@ -1,0 +1,23 @@
+[Unit]
+Description=AI scalper - LLM/rule supervisor over the hbot CLI
+Documentation=file://@HB_DIR@/ai_scalper/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@HB_DIR@/ai_scalper
+Environment=PYTHONUNBUFFERED=1
+Environment=PATH=@CONDA_DIR@/envs/hummingbot/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-@HB_DIR@/ai_scalper/.env
+# Dry-run by default: it logs the edits it would make and changes nothing. Add --apply once you
+# have watched a full session and agree with its judgement.
+ExecStart=@CONDA_DIR@/envs/hummingbot/bin/python llm_supervisor.py --every 300
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

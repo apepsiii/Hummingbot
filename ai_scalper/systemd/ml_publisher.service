@@ -1,0 +1,20 @@
+[Unit]
+Description=AI scalper - ML signal publisher (MQTT)
+Documentation=file://@HB_DIR@/ai_scalper/README.md
+After=network-online.target mosquitto.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@HB_DIR@/ai_scalper
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-@HB_DIR@/ai_scalper/.env
+ExecStart=@CONDA_DIR@/envs/hummingbot/bin/python ml_publisher.py --pair BTC-USDT --interval 1m --every 15
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
