@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Scalper — Hummingbot</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header id="topbar">
+  <div class="brand">
+    <span class="logo">▲</span>
+    <div>
+      <h1>AI Scalper</h1>
+      <p id="subtitle">connecting…</p>
+    </div>
+  </div>
+  <div id="badges"></div>
+</header>
+
+<div id="alert" class="alert hidden"></div>
+
+<main>
+  <section class="col-left">
+
+    <div class="card" id="card-signal">
+      <h2>AI signal <span class="hint" id="signal-pair"></span></h2>
+      <div id="signal-body" class="signal-body">
+        <div id="signal-direction" class="signal-dir flat">—</div>
+        <div class="signal-meta">
+          <div class="row"><label>confidence</label>
+            <div class="meter"><span id="conf-fill"></span></div>
+            <b id="conf-value">—</b></div>
+          <div class="row"><label>short</label>
+            <div class="meter"><span id="short-fill"></span></div>
+            <b id="short-value">—</b></div>
+          <div class="row"><label>neutral</label>
+            <div class="meter"><span id="neutral-fill"></span></div>
+            <b id="neutral-value">—</b></div>
+          <div class="row"><label>long</label>
+            <div class="meter"><span id="long-fill"></span></div>
+            <b id="long-value">—</b></div>
+        </div>
+        <div class="kv" id="signal-kv"></div>
+        <svg id="spark" viewBox="0 0 320 60" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+
+    <div class="card" id="card-controls">
+      <h2>Bot control</h2>
+      <div class="controls">
+        <button id="btn-start" class="btn ok">Start</button>
+        <button id="btn-stop" class="btn warn">Stop</button>
+        <button id="btn-kill" class="btn danger">Kill switch</button>
+        <button id="btn-refresh" class="btn ghost">Refresh</button>
+      </div>
+      <p class="note" id="control-note">One bot per install. Start uses the loaded config.</p>
+      <div id="action-log" class="action-log"></div>
+    </div>
+
+    <div class="card" id="card-status">
+      <h2>Strategy status</h2>
+      <pre id="format-status">—</pre>
+    </div>
+
+    <div class="card" id="card-health">
+      <h2>Health &amp; balances</h2>
+      <table class="grid" id="balances"><thead><tr><th>connector</th><th>asset</th><th>amount</th></tr></thead><tbody></tbody></table>
+      <table class="grid" id="doctor"><thead><tr><th>check</th><th>status</th><th>detail</th></tr></thead><tbody></tbody></table>
+    </div>
+
+  </section>
+
+  <section class="col-right">
+
+    <div class="card" id="card-perf">
+      <h2>Performance <span class="hint">realized, after fees</span></h2>
+      <div class="tiles" id="perf-tiles"></div>
+      <svg id="perf-chart" viewBox="0 0 640 140" preserveAspectRatio="none"></svg>
+      <table class="grid" id="history">
+        <thead><tr>
+          <th>market</th><th>pair</th><th>trades</th><th>gross</th><th>fees</th>
+          <th>net</th><th>return%</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="note" id="perf-note"></p>
+    </div>
+
+    <div class="card" id="card-config">
+      <h2>Live config <span class="hint" id="config-hint"></span></h2>
+      <table class="grid editable" id="config-table">
+        <thead><tr><th>key</th><th>current</th><th>set to</th><th>bounds</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="note">Only fields the controller marks <code>is_updatable</code> appear here; the
+        server re-validates every value against a hard whitelist and bounds before calling
+        <code>hbot config</code>. Applied live within ~10s.</p>
+    </div>
+
+    <div class="card" id="card-logs">
+      <h2>Logs <label class="toggle"><input type="checkbox" id="logs-follow" checked> auto-refresh</label></h2>
+      <pre id="log-body">—</pre>
+    </div>
+
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -18,6 +18,9 @@ orders.
   │  llm_supervisor.py  │ ◄───────────────────────────────────────┘
   │  the meta brain     │   bounded, whitelisted edits only
   └─────────────────────┘
+             ▲ browser ──► ai_scalper/webui/server.py ──► hbot CLI (mutasi tervalidasi)
+                          │            └────► MQTT hbot/predictions/# (read-only)
+                          └─ SSH tunnel loopback-only
 ```
 
 ## Where everything lives
@@ -29,9 +32,11 @@ orders.
 | ML brain | `ai_scalper/ml_publisher.py` | anywhere (dev box or VPS) | Fetches candles, runs the model, publishes predictions |
 | Model | `ai_scalper/baseline_model.py` | with the publisher | Feature engineering + `predict()` contract |
 | Meta brain | `ai_scalper/llm_supervisor.py` | VPS | Reads PnL/errors, retunes thresholds, trips the kill-switch |
+| Web UI | `ai_scalper/webui/` | VPS, loopback (SSH tunnel to view) | Monitor & control dashboard — see `ai_scalper/webui/README.md` |
+| CLI wrapper | `ai_scalper/hbot_client.py` | VPS | Shared hbot contract: whitelist, bounds, parsing (supervisor + UI) |
 | Broker config | `ai_scalper/mosquitto.conf` | VPS | Mosquitto, loopback-only by default |
 | Bootstrap | `ai_scalper/setup_vps.sh` | VPS | conda + mosquitto + configs, idempotent |
-| Services | `ai_scalper/systemd/*.service` | VPS | Keep the two AI processes alive |
+| Services | `ai_scalper/systemd/*.service` | VPS | Keep the AI processes and dashboard alive |
 
 ## 1. Provision the VPS
 
@@ -63,6 +68,9 @@ hbot logs -f          # expect: "AI scalper subscribed to MQTT topic: hbot/predi
 cd ~/hummingbot/ai_scalper
 python ml_publisher.py --pair BTC-USDT --interval 1m --every 15 --dry-run   # verify predictions first
 python ml_publisher.py --pair BTC-USDT --interval 1m --every 15             # then publish for real
+
+# shell C — the dashboard (optional; loopback, use an SSH tunnel to view from your laptop)
+python ai_scalper/webui/server.py            # http://127.0.0.1:8080
 ```
 
 Verify the wire independently of both processes:
@@ -185,6 +193,9 @@ there. Start with an amount you are willing to lose entirely.
 | Payload silently dropped | Not a JSON object, or `probabilities` missing/wrong length/out of `[0,1]` |
 | Many trades, negative PnL, fees ≈ gross | Barriers below round-trip fees. Raise `min_barrier`, `long_threshold`, `cooldown_time` |
 | `hbot: command not found` inside the conda env | The `make install` symlink step did not run; re-run `make install` from the repo root |
+| Dashboard: "bot unreachable" | Run `server.py` inside the hummingbot conda env so `hbot` resolves on PATH (or `--demo` to preview the UI) |
+| Dashboard: mutations return 401 | A `--token`/`WEBUI_TOKEN` is set — open the UI with `?token=<secret>` once, or send `X-WebUI-Token` |
+| Dashboard on another machine | It binds 127.0.0.1 on purpose; tunnel it: `ssh -L 8080:127.0.0.1:8080 user@vps` |
 
 ## Security
 

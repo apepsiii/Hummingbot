@@ -1,0 +1,24 @@
+[Unit]
+Description=AI scalper - Web dashboard (loopback only)
+Documentation=file://@HB_DIR@/ai_scalper/webui/README.md
+After=network-online.target mosquitto.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@HB_DIR@/ai_scalper/webui
+Environment=PYTHONUNBUFFERED=1
+Environment=PATH=@CONDA_DIR@/envs/hummingbot/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-@HB_DIR@/ai_scalper/.env
+# Loopback bind on purpose: reach it from your laptop over an SSH tunnel
+#   ssh -L 8080:127.0.0.1:8080 user@vps
+# To expose it directly, add a strong token: append --token <secret> (WEBUI_TOKEN in .env works too).
+ExecStart=@CONDA_DIR@/envs/hummingbot/bin/python server.py --host 127.0.0.1 --port 8080
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -94,15 +94,16 @@ fi
 if [[ "$INSTALL_SERVICES" == true ]]; then
   log "systemd units for the AI processes"
   sudo mkdir -p /etc/systemd/system
-  for unit in ml_publisher.service llm_supervisor.service; do
+  for unit in ml_publisher.service llm_supervisor.service webui.service; do
     sed -e "s|@HB_DIR@|$HB_DIR|g" \
         -e "s|@CONDA_DIR@|$CONDA_DIR|g" \
         -e "s|@USER@|$(id -un)|g" \
         "$AI_DIR/systemd/$unit" | sudo tee "/etc/systemd/system/$unit" >/dev/null
   done
   sudo systemctl daemon-reload
-  echo "installed: ml_publisher.service, llm_supervisor.service (not started)"
-  echo "start with: sudo systemctl start ml_publisher && sudo systemctl start llm_supervisor"
+  echo "installed: ml_publisher.service, llm_supervisor.service, webui.service (not started)"
+  echo "start with: sudo systemctl start ml_publisher llm_supervisor webui"
+  echo "dashboard:  ssh -L 8080:127.0.0.1:8080 user@this-vps  then open http://127.0.0.1:8080"
 fi
 
 conda run -n "$ENV_NAME" python -m pip install -r "$AI_DIR/requirements.txt"
@@ -123,6 +124,10 @@ Done. Next steps, in order:
 
   # 3. start the ML brain (separate shell)
   cd ai_scalper && python ml_publisher.py --pair BTC-USDT --interval 1m --every 15
+
+  # 3b. optional: the web dashboard (loopback; from your laptop: ssh -L 8080:127.0.0.1:8080)
+  #     or with --install-services: sudo systemctl start webui
+  python webui/server.py &
 
   # 4. once trades appear, review performance AFTER fees
   hbot history
